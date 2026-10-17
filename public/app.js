@@ -59,7 +59,11 @@ const activeRidersRef = ref(
   "activeRiders"
 );
 
-const shuttleStatus = document.querySelector("#shuttle-status");
+const shuttleStatus = 
+  document.querySelector("#shuttle-status");
+
+const shuttleUpdated =
+  document.querySelector("#shuttle-updated");
 
 
 ////
@@ -188,6 +192,9 @@ if (locations.length === 0) {
     shuttleStatus.textContent =
       "No active shuttle location available.";
 
+    shuttleUpdated.textContent =
+      "Waiting for location...";
+
     return;
   }
 
@@ -208,6 +215,18 @@ if (locations.length === 0) {
 
   shuttleStatus.textContent =
   `Estimated shuttle location based on ${locations.length} rider(s).`;
+
+  const latestUpdatedAt = Math.max(
+  ...locations.map(rider => rider.updatedAt || 0)
+  );
+
+  if (latestUpdatedAt > 0) {
+    const updatedTime =
+      new Date(latestUpdatedAt).toLocaleTimeString();
+
+    shuttleUpdated.textContent =
+      `Last updated at ${updatedTime}`;
+  }
 
   estimatedShuttlePosition = {
   latitude: averageLatitude,
