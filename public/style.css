@@ -1,0 +1,142 @@
+:root {
+  font-family: Arial, Helvetica, sans-serif;
+  color: #202124;
+  background: #f4f6f8;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+}
+
+.app-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 1rem 1.5rem;
+  color: white;
+  background: #174a2e;
+}
+
+.eyebrow {
+  margin: 0 0 0.25rem;
+  font-size: 0.8rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  opacity: 0.8;
+}
+
+h1,
+h2,
+p {
+  margin-top: 0;
+}
+
+h1 {
+  margin-bottom: 0;
+  font-size: clamp(1.25rem, 3vw, 1.8rem);
+}
+
+.status {
+  padding: 0.45rem 0.7rem;
+  border: 1px solid rgba(255, 255, 255, 0.45);
+  border-radius: 999px;
+  font-size: 0.85rem;
+}
+
+main {
+  width: min(1100px, 100%);
+  margin: 0 auto;
+  padding: 1.5rem;
+}
+
+.intro {
+  margin-bottom: 1rem;
+}
+
+.intro h2 {
+  margin-bottom: 0.35rem;
+}
+
+.intro p {
+  margin-bottom: 0;
+  color: #5f6368;
+}
+.location-controls {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.65rem;
+  margin-top: 1rem;
+}
+
+button {
+  padding: 0.65rem 0.9rem;
+  border: 0;
+  border-radius: 6px;
+  color: white;
+  background: #174a2e;
+  cursor: pointer;
+  font: inherit;
+}
+
+button:hover:not(:disabled) {
+  background: #246b43;
+}
+
+button:disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
+#stop-location {
+  background: #a83232;
+}
+
+#location-status {
+  color: #5f6368;
+  font-size: 0.9rem;
+}
+
+#map {
+  min-height: 560px;
+  border: 1px solid #d8dde3;
+  border-radius: 12px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
+}
+
+.legend {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-top: 0.75rem;
+  color: #5f6368;
+  font-size: 0.9rem;
+}
+
+.legend-line {
+  display: inline-block;
+  width: 2rem;
+  height: 0.25rem;
+  border-radius: 999px;
+  background: #f28c28;
+}
+
+@media (max-width: 600px) {
+  .app-header {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  main {
+    padding: 1rem;
+  }
+
+  #map {
+    min-height: 70vh;
+  }
+}

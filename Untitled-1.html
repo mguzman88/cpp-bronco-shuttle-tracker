@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Bronco Shuttle Tracker</title>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <header class="app-header">
+    <div>
+      <p class="eyebrow">Cal Poly Pomona</p>
+      <h1>Bronco Shuttle Tracker</h1>
+    </div>
+    <span class="status">Route preview</span>
+  </header>
+
+  <main>
+    <section class="intro" aria-labelledby="map-heading">
+      <h2 id="map-heading">Main Shuttle Route</h2>
+      <p>The orange line shows the route traced from the Bronco Shuttle map.</p>
+    </section>
+
+    <div id="map" aria-label="Map showing the Bronco Shuttle route"></div>
+
+    <section class="legend" aria-label="Map legend">
+      <span class="legend-line"></span>
+      <span>Bronco Shuttle route</span>
+    </section>
+  </main>
+
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
