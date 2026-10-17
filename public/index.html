@@ -32,6 +32,13 @@
       </div>
     </section>
 
+    <label for="route-select">Choose shuttle route:</label>
+
+    <select id="route-select">
+      <option value="campus">Main Campus Route</option>
+      <option value="apartments">Apartment Route</option>
+    </select>
+
     <div id="map" aria-label="Map showing the Bronco Shuttle route"></div>
 
     <p id="shuttle-status" class="shuttle-status">
@@ -43,9 +50,16 @@
     </p>
 
     <section class="legend" aria-label="Map legend">
-      <span class="legend-line"></span>
-      <span>Bronco Shuttle route</span>
-    </section>
+  <div class="legend-item">
+    <span class="legend-line campus-line"></span>
+    <span>Main Campus Route</span>
+  </div>
+
+  <div class="legend-item">
+    <span class="legend-line apartment-line"></span>
+    <span>Apartment Route</span>
+  </div>
+</section>
   </main>
 
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>

@@ -167,7 +167,18 @@ const stops = [
     name: "Parking Structure 1 Shuttle Stop",
     latitude: 34.0600136,
     longitude: -117.8181737
+  },
+  {
+    name: "Current Apartments",
+    latitude: 34.064004,
+    longitude: -117.802806
+  },
+  {
+    name: "CPP Village",
+    latitude: 34.0495731,
+    longitude: -117.8169576
   }
+
 ];
 
 stops.forEach((stop, index) => {
@@ -331,46 +342,163 @@ function updateNearestStop(
 }
 
 //
+const routeSelect =
+  document.querySelector("#route-select");
+
+let campusRouteLayer = null;
+let apartmentRouteLayer = null;
+
+let campusRouteCoordinates = [];
+let apartmentRouteCoordinates = [];
+
+function showSelectedRoute() {
+  const selectedRoute =
+    routeSelect.value;
+
+  console.log(
+    "Selected route:",
+    selectedRoute
+  );
+  console.log(
+  "Apartment layer exists:",
+  apartmentRouteLayer !== null
+  );
+
+  if (campusRouteLayer) {
+    map.removeLayer(campusRouteLayer);
+  }
+
+  if (apartmentRouteLayer) {
+    map.removeLayer(apartmentRouteLayer);
+  }
+
+  let selectedLayer;
+  let selectedCoordinates;
+
+  if (selectedRoute === "apartments") {
+    selectedLayer = apartmentRouteLayer;
+    selectedCoordinates =
+      apartmentRouteCoordinates;
+  } else {
+    selectedLayer = campusRouteLayer;
+    selectedCoordinates =
+      campusRouteCoordinates;
+  }
+
+  if (!selectedLayer) {
+    console.error(
+      "Selected route has not finished loading."
+    );
+    return;
+  }
+
+  selectedLayer.addTo(map);
+
+  routeCoordinates =
+    selectedCoordinates;
+
+  const selectedBounds =
+    selectedLayer.getBounds().pad(0.15);
+
+  map.setMaxBounds(selectedBounds);
+
+  map.fitBounds(selectedBounds, {
+    padding: [25, 25]
+  });
+}
+
+routeSelect.addEventListener(
+  "change",
+  showSelectedRoute
+);
+
 fetch("bronco-shuttle-route.geojson")
   .then(response => {
     if (!response.ok) {
-      throw new Error(`Could not load route: ${response.status}`);
+      throw new Error(
+        `Could not load campus route: ${response.status}`
+      );
     }
 
     return response.json();
   })
-
   .then(route => {
-     routeCoordinates =
+    campusRouteCoordinates =
       route.features[0].geometry.coordinates;
 
-    const routeLayer = L.geoJSON(route, {
+    campusRouteLayer = L.geoJSON(route, {
       style: {
         color: "#f28c28",
         weight: 6,
         opacity: 0.9
       }
-    }).addTo(map);
+    });
 
-    const shuttleBounds =
-      routeLayer.getBounds().pad(0.15);
-
-    map.setMaxBounds(shuttleBounds);
-
-    map.fitBounds(shuttleBounds, {
-      padding: [25, 25]
-  });
+    showSelectedRoute();
   })
   .catch(error => {
-    console.error(error);
-
-    document.querySelector("#map").insertAdjacentHTML(
-      "beforeend",
-      `<p class="map-error">
-        The route could not be loaded. Make sure the GeoJSON file is in the same folder.
-      </p>`
-    );
+    console.error("Campus route error:", error);
   });
+
+fetch("bronco-shuttle-apartments.geojson")
+  .then(response => {
+    if (!response.ok) {
+      throw new Error(
+        `Could not load apartment route: ${response.status}`
+      );
+    }
+
+    return response.json();
+  })
+  .then(route => {
+    const apartmentFeature =
+      route.features.find(
+        feature =>
+          feature.geometry &&
+          feature.geometry.type === "LineString"
+      );
+
+    if (!apartmentFeature) {
+      throw new Error(
+        "No LineString route found in apartment GeoJSON."
+      );
+    }
+
+    apartmentRouteCoordinates =
+      apartmentFeature.geometry.coordinates;
+
+    apartmentRouteLayer = L.geoJSON(
+      apartmentFeature,
+      {
+        style: {
+          color: "#2563eb",
+          weight: 6,
+          opacity: 0.9
+        }
+      }
+    );
+    console.log(
+    "Apartment route loaded:",
+    apartmentRouteCoordinates.length,
+    "coordinates"
+    );
+
+    console.log(
+    "Selected value:",
+    routeSelect.value
+    );
+    
+
+    showSelectedRoute();
+
+
+
+
+  })
+  .catch(error => {
+    console.error("Apartment route error:", error);
+  });
+
 function distanceMeters(
   latitude1,
   longitude1,
