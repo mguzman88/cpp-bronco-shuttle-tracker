@@ -58,10 +58,13 @@ const activeRidersRef = ref(
   database,
   "activeRiders"
 );
+
+const shuttleStatus = document.querySelector("#shuttle-status");
+
+
 ////
 
   
-////
 
 L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
   attribution: "&copy; OpenStreetMap contributors",
@@ -143,6 +146,8 @@ let sharedShuttleMarker = null;
 onValue(activeRidersRef, snapshot => {
   const riders = snapshot.val() || {};
 
+  console.log("Active riders:", riders);
+
   const now = Date.now();
 
 const locations = Object.values(riders).filter(rider => {
@@ -172,11 +177,16 @@ const locations = Object.values(riders).filter(rider => {
   return isNearRoute && hasGoodAccuracy && isRecent;
 });
 
+console.log("Valid rider locations:", locations);
+
 if (locations.length === 0) {
     if (sharedShuttleMarker) {
       map.removeLayer(sharedShuttleMarker);
       sharedShuttleMarker = null;
     }
+
+    shuttleStatus.textContent =
+      "No active shuttle location available.";
 
     return;
   }
@@ -195,6 +205,10 @@ if (locations.length === 0) {
     averageLatitude,
     averageLongitude
   ];
+
+  shuttleStatus.textContent =
+  `Estimated shuttle location based on ${locations.length} rider(s).`;
+
   estimatedShuttlePosition = {
   latitude: averageLatitude,
   longitude: averageLongitude
@@ -467,6 +481,12 @@ if (
         accuracy: position.coords.accuracy,
         updatedAt: Date.now()
       });
+        then(() => {
+          console.log("Location updated in Firebase.");
+        })
+        .catch(error => {
+          console.error("Error updating location:", error);
+        });
 
       if (!studentLocationMarker) {
         studentLocationMarker = L.circleMarker(
