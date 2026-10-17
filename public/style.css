@@ -140,3 +140,21 @@ button:disabled {
     min-height: 70vh;
   }
 }
+
+/* Mobile-friendly layout */
+@media (max-width: 600px) {
+  body {
+    margin: 0;
+    font-size: 16px;
+    overflow-x: hidden;
+  }
+
+  .app-header {
+    padding: 16px;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+  }
+  
+}

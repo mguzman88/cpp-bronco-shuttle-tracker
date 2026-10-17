@@ -8,7 +8,9 @@ import {
   ref,
   set,
   remove,
-  onValue
+  onValue,
+  onDisconnect,
+  get
 } from
   "https://www.gstatic.com/firebasejs/12.19.0/firebase-database.js";
 
@@ -33,8 +35,21 @@ const riderLocationRef = ref(
   database,
   `activeRiders/${riderId}`
 );
+onDisconnect(riderLocationRef)
+  .remove()
+  .catch(error => {
+    console.error(
+      "Could not register disconnect cleanup:",
+      error
+    );
+  });
 
-const map = L.map("map").setView([34.057, -117.821], 15);
+
+const map = L.map("map", {
+  maxBoundsViscosity: 1.0,
+  minZoom: 14,
+  maxZoom: 19,
+}).setView([34.057, -117.821], 15);
 
 const ROUTE_LIMIT_METERS = 150;
 const GRACE_PERIOD_MS = 7 * 60 * 1000;
@@ -57,6 +72,38 @@ let speedMismatchSince = null;
 const activeRidersRef = ref(
   database,
   "activeRiders"
+);
+const STALE_RIDER_MS = 7* 60 * 1000;
+
+async function cleanupStaleRiders() {
+  try {
+    const snapshot = await get(activeRidersRef);
+    const riders = snapshot.val() || {};
+    const now = Date.now();
+
+    for (const [riderId, rider] of Object.entries(riders)) {
+      const isStale =
+        !rider.updatedAt ||
+        now - rider.updatedAt > STALE_RIDER_MS;
+
+      if (isStale) {
+        await remove(
+          ref(database, `activeRiders/${riderId}`)
+        );
+
+        console.log(`Removed stale rider: ${riderId}`);
+      }
+    }
+  } catch (error) {
+    console.error("Stale rider cleanup failed:", error);
+  }
+}
+
+cleanupStaleRiders();
+
+setInterval(
+  cleanupStaleRiders,
+  60 * 1000
 );
 
 const shuttleStatus = 
@@ -252,6 +299,37 @@ updateStopETAs();
     sharedShuttleMarker.setLatLng(shuttlePosition);
   }
 });
+function updateNearestStop(
+  latitude,
+  longitude
+) {
+  let closestStop = null;
+  let closestDistance = Infinity;
+
+  stops.forEach(stop => {
+    const distance = distanceMeters(
+      latitude,
+      longitude,
+      stop.latitude,
+      stop.longitude
+    );
+
+    if (distance < closestDistance) {
+      closestDistance = distance;
+      closestStop = stop;
+    }
+  });
+
+  if (closestStop) {
+    const distanceInMeters =
+      Math.round(closestDistance);
+
+    nearestStopStatus.textContent =
+      `Nearest stop: ${closestStop.name} ` +
+      `(${distanceInMeters} meters away)`;
+  }
+}
+
 //
 fetch("bronco-shuttle-route.geojson")
   .then(response => {
@@ -274,9 +352,14 @@ fetch("bronco-shuttle-route.geojson")
       }
     }).addTo(map);
 
-    map.fitBounds(routeLayer.getBounds(), {
+    const shuttleBounds =
+      routeLayer.getBounds().pad(0.15);
+
+    map.setMaxBounds(shuttleBounds);
+
+    map.fitBounds(shuttleBounds, {
       padding: [25, 25]
-    });
+  });
   })
   .catch(error => {
     console.error(error);
@@ -450,6 +533,8 @@ let studentLocationMarker = null;
 const startLocationButton = document.querySelector("#start-location");
 const stopLocationButton = document.querySelector("#stop-location");
 const locationStatus = document.querySelector("#location-status");
+const nearestStopStatus =
+  document.querySelector("#nearest-stop");
 
 function startLocationSharing() {
   if (!navigator.geolocation) {
@@ -466,6 +551,11 @@ function startLocationSharing() {
     position => {
       const latitude = position.coords.latitude;
       const longitude = position.coords.longitude;
+
+      updateNearestStop(
+        latitude,
+        longitude
+      );
 
       const now = Date.now();
 
@@ -489,6 +579,9 @@ if (
 ) {
   locationStatus.textContent =
     "Sharing stopped because you left the route.";
+
+  nearestStopStatus.textContent =
+    "Nearest stop: Start sharing your location.";
 
   stopLocationSharing();
   return;
